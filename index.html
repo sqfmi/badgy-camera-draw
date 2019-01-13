@@ -26,9 +26,9 @@
         </style>
     </head>
     <body>
-        <video id="video" width="640" height="480" autoplay></video>
+        <video id="video" width="296" height="128" autoplay></video>
         <button id="snap">Snap Photo</button>
-        <canvas id="canvas" width="640" height="480"></canvas>
+        <canvas id="canvas" width="296" height="128"></canvas>
     </body>
     <script>
         /*(function(){
@@ -165,7 +165,7 @@
 
             // Trigger photo take
             document.getElementById('snap').addEventListener('click', function() {
-                context.drawImage(video, 0, 0, 640, 480);
+                context.drawImage(video, 0, 0, 296, 128);
             });
         }, false);
 
