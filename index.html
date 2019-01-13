@@ -166,10 +166,9 @@
                 });
             }
 
-            // Trigger photo take
-            document.getElementById('snap').addEventListener('click', function() {
-                context.drawImage(video, 0, 0, 296, 128);
-            });
+            setInterval(function(){
+		context.drawImage(video, 0, 0, 296, 128);
+	    },100);
         }, false);
 
     </script>
