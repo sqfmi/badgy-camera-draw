@@ -14,7 +14,8 @@
                 text-align:center;
             }
 	    video {
-    		object-fit: cover;
+    		visibility:hidden;
+		position:absolute;
 	    }
             #canvas{
             }
@@ -152,7 +153,7 @@
             var canvas = document.getElementById('canvas');
             var context = canvas.getContext('2d');
             var video = document.getElementById('video');
-            var mediaConfig =  { video: true };
+            var mediaConfig =  { video: {width: {exact: 290}, height: {exact: 128}} };
             var errBack = function(e) {
                 console.log('An error has occurred!', e)
             };
