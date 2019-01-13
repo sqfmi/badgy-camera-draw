@@ -167,20 +167,50 @@
                 });
             }
 
-		function invertColors(data) {
-		  for (var i = 0; i < data.length; i+= 4) {
-		    data[i] = data[i] ^ 255; // Invert Red
-		    data[i+1] = data[i+1] ^ 255; // Invert Green
-		    data[i+2] = data[i+2] ^ 255; // Invert Blue
-		  }
-		}		
+            function dither(image) {
+                //grayscale
+                for (var i = 0; i <= image.data.length; i += 4) {
+                    image.data[i] = image.data[i + 1] = image.data[i + 2] = parseInt(image.data[i] * 0.21 + image.data[i + 1] * 0.71 + image.data[i + 2] * 0.07, 10);
+
+                }
+                //atkinson dither
+                skipPixels = 4;
+                imageWidth = 296;
+                imageLength = image.data.length;
+
+                for (currentPixel = 0; currentPixel <= imageLength; currentPixel += skipPixels) {
+
+                    if (image.data[currentPixel] <= 128) {
+
+                        newPixelColour = 0;
+
+                    } else {
+
+                        newPixelColour = 255;
+
+                    }
+
+                    err = parseInt((image.data[currentPixel] - newPixelColour) / 8, 10);
+                    image.data[currentPixel] = newPixelColour;
+
+                    image.data[currentPixel + 4]                        += err;
+                    image.data[currentPixel + 8]                        += err;
+                    image.data[currentPixel + (4 * imageWidth) - 4]     += err;
+                    image.data[currentPixel + (4 * imageWidth)]         += err;
+                    image.data[currentPixel + (4 * imageWidth) + 4]     += err;
+                    image.data[currentPixel + (8 * imageWidth)]         += err;
+
+                    image.data[currentPixel + 1] = image.data[currentPixel + 2] = image.data[currentPixel];
+
+                }
+            }		
 		
             setInterval(function(){
-		context.drawImage(video, 0, 0, 296, 128);
-		var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-		invertColors(imageData.data);
-		context.putImageData(imageData, 0, 0);
-	    },100);
+                context.drawImage(video, 0, 0, 296, 128);
+                var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                dither(imageData);
+                context.putImageData(imageData, 0, 0);
+            },100);
 		
         }, false);
 	    
