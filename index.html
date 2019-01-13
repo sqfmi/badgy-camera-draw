@@ -13,140 +13,34 @@
                 height:100%;
                 text-align:center;
             }
-	    video {
-    		visibility:hidden;
-		position:absolute;
-	    }
+            video{
+                visibility:hidden;
+                position:absolute;
+            }
+            button,label{
+                display:block;
+            }
             #canvas{
             }
             #clear{
                 float:left;
                 margin:0 0 0 10%;
             }
-            #send{
-                float:right;
-                margin:0 10% 0 0;
+            #connect,#send{
+                margin:0 auto;
             }
         </style>
     </head>
     <body>
         <video id="video" width="296" height="128" autoplay></video>
-        <button id="snap">Snap Photo</button>
         <canvas id="canvas" width="296" height="128"></canvas>
+        <label>IP ADDRESS:
+            <input id="ip" type="text" />
+        </label>
+        <button id="connect">Connect</button>
+        <button id="send">Send Photo</button>
     </body>
     <script>
-        /*(function(){
-            //DOM elements
-            let canvas      = document.getElementById('canvas');
-            let sendBtn     = document.getElementById('send');
-            let clearBtn    = document.getElementById('clear');
-
-            //canvas
-            let ctx             = canvas.getContext('2d');
-            let canvasWidth     = window.innerWidth * 0.8; //set canvas to 80% of screen
-            let scaleFactor     = canvasWidth / 296; //scale to ePaper display's width
-            let canvasHeight    = Math.round(canvasWidth / 2.3125); //296 x 128 aspect ratio
-            canvas.style.width  = canvasWidth + 'px';
-            canvas.style.height = canvasHeight + 'px';
-            ctx.canvas.width    = 296;
-            ctx.canvas.height   = 128;
-            let scaleFactorX    = canvas.offsetWidth / 296;
-            let scaleFactorY    = canvas.offsetHeight / 128;
-            let lineWidth       = 2;
-
-            //websockets
-            let socket          = new WebSocket('ws://192.168.0.113:81'); //REPLACE IP ADDRESS WITH THE ONE DISPLAYED ON BADGY
-            socket.binaryType   = 'arraybuffer';
-            socket.onopen       = () => { console.log('connected!'); }
-
-            //events
-            canvas.ontouchstart = start;
-            canvas.onmousedown  = start;
-            canvas.ontouchend   = stop;
-            canvas.onmouseup    = stop;
-            canvas.ontouchmove  = move;
-            canvas.onmousemove  = move;
-            sendBtn.onclick     = send;
-            clearBtn.onclick    = clearCanvas;
-
-            function start(e){
-                e.preventDefault();
-                let x,y;
-                if(e.type == 'touchstart'){
-                    touch = e.touches[0];
-                    x = touch.pageX - canvas.offsetLeft;
-                    y = touch.pageY - canvas.offsetTop;
-                }else{
-                    x = e.layerX;
-                    y = e.layerY;
-                }
-                ctx.beginPath();
-                ctx.moveTo(x/scaleFactorX, y/scaleFactorY);
-                ctx.lineWidth = lineWidth;
-                ctx.isDrawing = true;
-            }
-
-            function stop(e){
-                e.preventDefault();
-                ctx.isDrawing = false;
-            }
-
-            function move(e){
-                e.preventDefault();
-                let x,y;
-                if(e.type == 'touchmove'){
-                    touch = e.touches[0];
-                    x = touch.pageX - canvas.offsetLeft;
-                    y = touch.pageY - canvas.offsetTop;
-                }else{
-                    x = e.layerX;
-                    y = e.layerY;
-                }
-                if(ctx.isDrawing){
-                    ctx.lineTo(x/scaleFactorX, y/scaleFactorY);
-                    ctx.stroke();
-                }
-            }
-
-            function canvasToByteArray(){
-                let byteArray = [];
-                let imageData = ctx.getImageData(0,0,canvas.width, canvas.height).data;
-                let byteIndex = 7;
-			    let byte = 0;
-
-                for(let i = 3; i < imageData.length; i += 4){ //RGBA format, since our image is B&W, we only care about A (4th position)
-                    if(imageData[i] > 0){ //either black or white, no grayscale
-                        byte += Math.pow(2,byteIndex); //bit shift on black pixel
-                    }
-                    byteIndex--;
-                    if(i == imageData.length - 4){
-                        for(let i=byteIndex; i > -1; i--){ //wrap up loose ends
-						    byte += Math.pow(2, i);
-					    }
-					    byteIndex = -1;                        
-                    }
-                    if(byteIndex < 0){ //once we have a full byte, push to array
-                        byteArray.push(byte);
-                        byte = 0;
-                        byteIndex = 7;
-                    }
-                }
-                return byteArray;
-            }
-
-            function send(){
-                let byteArray = new Uint8Array(canvasToByteArray());
-                socket.send(byteArray.buffer);
-            }
-
-            function clearCanvas(){
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                send();
-            }
-            
-        })();*/
-        // Grab elements, create settings, etc.
-
         // Put event listeners into place
         window.addEventListener("DOMContentLoaded", function() {
             // Grab elements, create settings, etc.
@@ -167,6 +61,50 @@
                 });
             }
 
+            var sendBtn = document.getElementById('send');
+            var connectBtn = document.getElementById('connect');
+            sendBtn.onclick = send;
+            connectBtn.onclick = connectSocket;
+            var socket;
+
+            function canvasToByteArray(){
+                let byteArray = [];
+                let imageData = context.getImageData(0,0,canvas.width, canvas.height).data;
+                let byteIndex = 7;
+                let byte = 0;
+
+                for(let i = 3; i < imageData.length; i += 4){ //RGBA format, since our image is B&W, we only care about A (4th position)
+                    if(imageData[i] > 0){ //either black or white, no grayscale
+                        byte += Math.pow(2,byteIndex); //bit shift on black pixel
+                    }
+                    byteIndex--;
+                    if(i == imageData.length - 4){
+                        for(let i=byteIndex; i > -1; i--){ //wrap up loose ends
+                            byte += Math.pow(2, i);
+                        }
+                        byteIndex = -1;                        
+                    }
+                    if(byteIndex < 0){ //once we have a full byte, push to array
+                        byteArray.push(byte);
+                        byte = 0;
+                        byteIndex = 7;
+                    }
+                }
+                return byteArray;
+            }
+
+            function connectSocket(){
+                var ip_address = document.getElementById('ip').value;
+                socket = new WebSocket('ws://'+ip_address+':81'); //REPLACE IP ADDRESS WITH THE ONE DISPLAYED ON BADGY
+                socket.binaryType   = 'arraybuffer';
+                socket.onopen       = () => { console.log('connected!'); }                
+            }
+
+            function send(){
+                let byteArray = new Uint8Array(canvasToByteArray());
+                socket.send(byteArray.buffer);
+            }            
+
             function dither(image) {
                 //grayscale
                 for (var i = 0; i <= image.data.length; i += 4) {
@@ -175,19 +113,15 @@
                 }
                 //atkinson dither
                 skipPixels = 4;
-                imageWidth = 296;
+                imageWidth = image.width;
                 imageLength = image.data.length;
 
                 for (currentPixel = 0; currentPixel <= imageLength; currentPixel += skipPixels) {
 
-                    if (image.data[currentPixel] <= 128) {
-
+                    if(image.data[currentPixel] <= 128){
                         newPixelColour = 0;
-
-                    } else {
-
+                    }else{
                         newPixelColour = 255;
-
                     }
 
                     err = parseInt((image.data[currentPixel] - newPixelColour) / 8, 10);
@@ -203,16 +137,16 @@
                     image.data[currentPixel + 1] = image.data[currentPixel + 2] = image.data[currentPixel];
 
                 }
-            }		
-		
+            }       
+        
             setInterval(function(){
                 context.drawImage(video, 0, 0, 296, 128);
                 var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
                 dither(imageData);
                 context.putImageData(imageData, 0, 0);
             },100);
-		
+        
         }, false);
-	    
+        
     </script>
 </html>
